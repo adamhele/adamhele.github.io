@@ -5,7 +5,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'server/**'    # trigger only if anything inside /server changes
+      - 'wolfloom/server/**'    # trigger only if anything inside /server changes
   workflow_dispatch:   # still allows manual trigger
 
 # Needed so release step can create releases
@@ -26,12 +26,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r server/requirements.txt
+          pip install -r wolfloom/server/requirements.txt
           pip install pyinstaller
 
       - name: Build Linux binary
         run: |
-          pyinstaller --onefile server/host.py --name wolfloom-server-linux
+          pyinstaller --onefile wolfloom/server/host.py --name wolfloom-server-linux
 
       - name: Create tar.gz archive
         run: |
@@ -57,12 +57,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r server\requirements.txt
+          pip install -r wolfloom/server\requirements.txt
           pip install pyinstaller
 
       - name: Build Windows binary
         run: |
-          pyinstaller --onefile server\host.py --name wolfloom-server.exe
+          pyinstaller --onefile wolfloom/server\host.py --name wolfloom-server.exe
         shell: powershell
 
       - name: Upload Windows artifact
