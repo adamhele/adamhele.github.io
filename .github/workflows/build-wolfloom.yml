@@ -1,0 +1,120 @@
+name: Build WolfLoom Binaries
+
+# Trigger on push to main + optional manual trigger
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'server/**'    # trigger only if anything inside /server changes
+  workflow_dispatch:   # still allows manual trigger
+
+# Needed so release step can create releases
+permissions:
+  contents: write
+
+jobs:
+  # ---------------- Linux Build ----------------
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install -r server/requirements.txt
+          pip install pyinstaller
+
+      - name: Build Linux binary
+        run: |
+          pyinstaller --onefile server/host.py --name wolfloom-server-linux
+
+      - name: Create tar.gz archive
+        run: |
+          cd dist
+          tar -czvf wolfloom-server-linux.tar.gz wolfloom-server-linux
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wolfloom-server-linux
+          path: dist/wolfloom-server-linux.tar.gz
+
+  # ---------------- Windows Build ----------------
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install -r server\requirements.txt
+          pip install pyinstaller
+
+      - name: Build Windows binary
+        run: |
+          pyinstaller --onefile server\host.py --name wolfloom-server.exe
+        shell: powershell
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wolfloom-server.exe
+          path: dist/wolfloom-server.exe
+
+  # ---------------- Create Release ----------------
+  release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download the built binaries
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wolfloom-server-linux
+          path: ./dist
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wolfloom-server.exe
+          path: ./dist
+
+      # Create a unique tag for this run
+      - name: Create Git tag
+        run: |
+          TAG=v${{ github.run_number }}
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag $TAG
+          git push origin $TAG
+
+      # Create GitHub release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: WolfLoom v${{ github.run_number }}
+          body: "Automatic build from commit ${{ github.sha }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload binaries to the release
+      - name: Upload binaries
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
