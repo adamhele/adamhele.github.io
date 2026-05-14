@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://wolfloom.github.io/sitemap.xml
