@@ -1,9 +1,6 @@
-    // WolfLoom compatibility checks based on build.yml requirements
-    function checkWolfLoomCompatibility() {
+        function checkWolfLoomCompatibility() {
       const checks = {
         python313: () => {
-          // Check Python 3.13 support via Pyodide (web Python) or Node.js
-          // For native: modern browsers support required APIs
           return navigator.userAgent.includes('Windows') || 
                  navigator.userAgent.includes('Linux') || 
                  navigator.userAgent.includes('Mac');
@@ -22,7 +19,6 @@
                  /Mac OS X \d+[._]\d+/.test(ua);
         },
         wasmSupport: () => {
-          // PyInstaller binaries require WebAssembly for web deployment
           try {
             const canvas = document.createElement('canvas');
             return !!WebAssembly.instantiate;
@@ -31,14 +27,12 @@
           }
         },
         architecture: () => {
-          // Check x64 support (PyInstaller default)
           return !navigator.userAgent.includes('arm') || 
                  navigator.userAgent.includes('x86_64') ||
                  navigator.userAgent.includes('Win64');
         }
       };
 
-      // Run all checks
       const results = {
         python313: checks.python313(),
         modernBrowser: checks.modernBrowser(),
@@ -56,7 +50,6 @@
       };
     }
 
-    // Update button UI
     function updateButton(result) {
       const btn = document.getElementById('compatibilityBtn');
       const icon = document.getElementById('statusIcon');
@@ -72,20 +65,17 @@
         text.textContent = '';
       }
 
-      // Add title with details
       const failedChecks = result.checks.filter(check => !result.details[check]);
       btn.title = result.compatible 
         ? 'WolfLoom fully supported on this device'
         : `Missing: ${failedChecks.join(', ')}`;
     }
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       const result = checkWolfLoomCompatibility();
       updateButton(result);
     });
 
-    // Re-check on resize/orientation change
     window.addEventListener('resize', () => {
       const result = checkWolfLoomCompatibility();
       updateButton(result);
@@ -135,13 +125,10 @@ document.getElementById("copy-btn").addEventListener("click", (e) => {
   });
 });
 
-// Run on load
 window.addEventListener('load', updateHeaderOffset);
 
-// Update if window resizes (responsive layouts)
 window.addEventListener('resize', updateHeaderOffset);
 
-// Toggle download panel
 const downloadToggle = document.getElementById('downloadToggle');
 const downloadPanel = document.getElementById('downloadPanel');
 
@@ -150,7 +137,6 @@ if (downloadToggle && downloadPanel) {
     downloadPanel.classList.toggle('open');
   });
 
-  // Close panel when clicking outside
   document.addEventListener('click', (event) => {
     if (!downloadPanel.contains(event.target) && !downloadToggle.contains(event.target)) {
       downloadPanel.classList.remove('open');
@@ -158,7 +144,6 @@ if (downloadToggle && downloadPanel) {
   });
 }
 
-//Download warning
 const warning = document.getElementById("downloadWarning");
 const confirmBtn = document.getElementById("confirmDownload");
 const cancelBtn = document.getElementById("cancelDownload");
@@ -180,8 +165,6 @@ cancelBtn.addEventListener("click", () => {
   pendingDownload = null;
 });
 
-
-// Tabs for installation guide
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabPanels = document.querySelectorAll('.tab-panel');
 
@@ -190,13 +173,11 @@ tabButtons.forEach((button) => {
     const target = button.getAttribute('data-tab');
     if (!target) return;
 
-    // Update buttons
     tabButtons.forEach((btn) => {
       btn.classList.toggle('active', btn === button);
       btn.setAttribute('aria-selected', btn === button ? 'true' : 'false');
     });
 
-    // Update panels
     tabPanels.forEach((panel) => {
       const isActive = panel.id === `tab-${target}`;
       panel.classList.toggle('active', isActive);
@@ -204,7 +185,6 @@ tabButtons.forEach((button) => {
   });
 });
 
-// Subtle scroll-in animation for feature cards
 const featureCards = document.querySelectorAll('.feature-card');
 
 if ('IntersectionObserver' in window && featureCards.length > 0) {
@@ -224,6 +204,5 @@ if ('IntersectionObserver' in window && featureCards.length > 0) {
 
   featureCards.forEach((card) => observer.observe(card));
 } else {
-  // Fallback: show all if IntersectionObserver not supported
   featureCards.forEach((card) => card.classList.add('visible'));
 }
